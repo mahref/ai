@@ -42,6 +42,7 @@ import time
 import search
 from util import manhattanDistance
 import itertools
+from search import bfs
 
 class GoWestAgent(Agent):
     "An agent that goes West until it can't."
@@ -512,9 +513,7 @@ class ClosestDotSearchAgent(SearchAgent):
         food = gameState.getFood()
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
-
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return bfs(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -548,9 +547,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         complete the problem definition.
         """
         x,y = state
-
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.food.asList().count((x, y)) != 0
 
 def mazeDistance(point1, point2, gameState):
     """
