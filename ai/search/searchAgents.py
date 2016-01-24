@@ -41,6 +41,7 @@ import util
 import time
 import search
 from util import manhattanDistance
+import itertools
 
 class GoWestAgent(Agent):
     "An agent that goes West until it can't."
@@ -358,6 +359,12 @@ class CornersProblem(search.SearchProblem):
         return len(actions)
 
 
+def findTotalDistance(nodes):
+    distance = 0
+    for i in xrange(0, len(nodes) - 1):
+        distance += manhattanDistance(nodes[i], nodes[i+1])
+    return distance
+
 def cornersHeuristic(state, problem):
     """
     A heuristic for the CornersProblem that you defined.
@@ -376,7 +383,10 @@ def cornersHeuristic(state, problem):
     if state[1] == 0:
         return 0
     remainingCorners = problem.getRemainingCorners(state[1])
-    distanceToCorners = [manhattanDistance(state[0], corner) for corner in remainingCorners]
+    distanceToCorners = []
+    for cornersOrder in itertools.permutations(remainingCorners):
+        visitOrder = [state[0]] + list(cornersOrder)
+        distanceToCorners.append(findTotalDistance(visitOrder))
     return min(distanceToCorners)
 
 class AStarCornersAgent(SearchAgent):
