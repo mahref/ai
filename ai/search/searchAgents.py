@@ -40,6 +40,7 @@ from game import Actions
 import util
 import time
 import search
+from util import manhattanDistance
 
 class GoWestAgent(Agent):
     "An agent that goes West until it can't."
@@ -266,10 +267,10 @@ def euclideanHeuristic(position, problem, info={}):
 # This portion is incomplete.  Time to write code!  #
 #####################################################
 
-LB = 1 # Left-Bottom
-LT = 2 # Left-Top
-RB = 4 # Right-Bottom
-RT = 8 # Right-Top
+LB = 0 # Left-Bottom
+LT = 1 # Left-Top
+RB = 2 # Right-Bottom
+RT = 3 # Right-Top
 
 class CornersProblem(search.SearchProblem):
     """
@@ -277,16 +278,15 @@ class CornersProblem(search.SearchProblem):
 
     You must select a suitable state space and successor function
     """
+    def getRemainingCorners(self, states):
+        remainingCornerIndecies = filter(lambda i: states & 2**i != 0, [0, 1, 2,  3])
+        return [self.corners[i] for i in remainingCornerIndecies]
 
-    def getRemainingCorners(self, position, states):
-        if position == self.corners[0]:
-            states &= ~LB
-        elif position == self.corners[1]:
-            states &= ~LT
-        elif position == self.corners[2]:
-            states &= ~RB
-        elif position == self.corners[3]:
-            states &= ~RT
+    def getUpdatedCorners(self, position, states):
+        for i in [0, 1, 2, 3]:
+            if position == self.corners[i]:
+                states &= ~(2**i)
+                break;
         return states
 
     def __init__(self, startingGameState):
@@ -301,7 +301,7 @@ class CornersProblem(search.SearchProblem):
             if not startingGameState.hasFood(*corner):
                 print 'Warning: no food in corner ' + str(corner)
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
-        remainingCorners = self.getRemainingCorners(self.startingPosition, LB|LT|RB|RT)
+        remainingCorners = self.getUpdatedCorners(self.startingPosition, 1|2|4|8)
         self.startingState = (self.startingPosition, remainingCorners)
 
     def getStartState(self):
@@ -336,7 +336,7 @@ class CornersProblem(search.SearchProblem):
             nextx, nexty = int(x + dx), int(y + dy)
             if not self.walls[nextx][nexty]:
                 nextPosition = (nextx, nexty)
-                remainingCorners = self.getRemainingCorners(nextPosition, state[1])
+                remainingCorners = self.getUpdatedCorners(nextPosition, state[1])
                 nextState = (nextPosition, remainingCorners)
                 cost = 1 # self.costFn(nextState)
                 successors.append( ( nextState, action, cost) )
@@ -373,9 +373,11 @@ def cornersHeuristic(state, problem):
     """
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
-
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    if state[1] == 0:
+        return 0
+    remainingCorners = problem.getRemainingCorners(state[1])
+    distanceToCorners = [manhattanDistance(state[0], corner) for corner in remainingCorners]
+    return min(distanceToCorners)
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
