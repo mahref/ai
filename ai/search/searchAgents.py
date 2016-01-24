@@ -43,6 +43,7 @@ import search
 from util import manhattanDistance
 import itertools
 from search import bfs
+from operator import itemgetter
 
 class GoWestAgent(Agent):
     "An agent that goes West until it can't."
@@ -452,6 +453,28 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
 
+def minimumSpanningTree(foodList):
+    edges = []
+    for p1, p2 in itertools.product(foodList, foodList):
+        if p1 == p2 or p1 > p2:
+            continue
+        edges.append((p1, p2, manhattanDistance(p1, p2)))
+    edges.sort(key=itemgetter(2))
+    msp = 0
+    seen = set()
+    remaining = set(foodList)
+    for edge in edges:
+        if edge[0] in seen and edge[1] in seen:
+            continue;
+        msp += edge[2]
+        seen.add(edge[0])
+        seen.add(edge[1])
+        remaining.discard(edge[0])
+        remaining.discard(edge[1])
+        if len(remaining) == 0:
+            break
+    return msp
+
 def foodHeuristic(state, problem):
     """
     Your heuristic for the FoodSearchProblem goes here.
@@ -484,7 +507,14 @@ def foodHeuristic(state, problem):
     foodList = list(foodGrid.asList())
     if len(foodList) == 0:
         return 0
-    return max([mazeDistance(position, food, problem.startingGameState) for food in foodList])
+    manhattanFoodDistances = [manhattanDistance(position, food) for food in foodList]
+#    return max([mazeDistance(position, food, problem.startingGameState) for food in foodList])
+#    return min([mazeDistance(position, food, problem.startingGameState) for food in foodList]) + len(foodList) - 1
+    farthestFood = max(manhattanFoodDistances)
+    closestFood = min(manhattanFoodDistances)
+    msp = minimumSpanningTree(foodList)
+    return max(farthestFood, closestFood + len(foodList) - 1, closestFood + msp - 1)
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
