@@ -220,11 +220,17 @@ def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
-
-      DESCRIPTION: <write something here so we know what you did>
+      1. Used standard score.
+      2. Penalty if far from closest food. (no weight)
+      3. Penalty if close to ghost. (no weight)
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    pos = currentGameState.getPacmanPosition()
+
+    score = currentGameState.getScore()
+    score -= min([util.manhattanDistance(pos, foodPos) for foodPos in currentGameState.getFood().asList()] or [0])
+    if 2 > min([util.manhattanDistance(pos, ghost.getPosition()) for ghost in currentGameState.getGhostStates()]):
+        score -= 1000
+    return score
 
 # Abbreviation
 better = betterEvaluationFunction
