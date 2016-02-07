@@ -152,13 +152,40 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
     """
+    def max(self, state, depth, alpha, beta):
+        if state.isWin() or state.isLose() or depth == 0:
+            return self.evaluationFunction(state), ''
+        v = (float("-inf"), '')
+        for a in state.getLegalActions(0):
+            v = max(v, (self.min(state.generateSuccessor(0, a), depth, 1, alpha, beta)[0], a))
+            alpha = max(alpha, v[0])
+            if v[0] > beta:
+                return v
+        return v
+
+    def min(self, state, depth, agent, alpha, beta):
+        if state.isWin() or state.isLose() or depth == 0:
+            return self.evaluationFunction(state), ''
+        v = (float("inf"), '')
+        if agent == state.getNumAgents() - 1:
+            for a in state.getLegalActions(agent):
+                v = min(v, (self.max(state.generateSuccessor(agent, a), depth - 1, alpha, beta)[0], a))
+                beta = min(beta, v[0])
+                if v[0] < alpha:
+                    return v
+            return v
+        for a in state.getLegalActions(agent):
+            v = min(v, (self.min(state.generateSuccessor(agent, a), depth, agent + 1, alpha, beta)[0], a))
+            beta = min(beta, v[0])
+            if v[0] < alpha:
+                return v
+        return v
 
     def getAction(self, gameState):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.max(gameState, self.depth, float("-inf"), float("inf"))[1]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
