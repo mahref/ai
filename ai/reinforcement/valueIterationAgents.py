@@ -41,14 +41,17 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.mdp = mdp
         self.discount = discount
         self.iterations = iterations
+        # initialize all values to zero.
         self.values = {state: 0 for state in self.mdp.getStates()}
 
+        # run all iterations and calculates new Vs per iteration.
         for i in range(iterations):
-            nextValues = {state: self.calculateNextValue(state) for state in self.values}
-            self.values = nextValues
+            self.values = {state: self.calculateNextValue(state) for state in self.values}
 
     def calculateNextValue(self, state):
+        # calculate all Qs.
         Qs = [self.computeQValueFromValues(state, action) for action in self.mdp.getPossibleActions(state)]
+        # pick max Q.
         return max(Qs) if len(Qs) > 0 else 0
 
     def getValue(self, state):
