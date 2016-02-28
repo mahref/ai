@@ -55,9 +55,7 @@ def question3e():
     return answerDiscount, answerNoise, answerLivingReward
 
 def question6():
-    answerEpsilon = None
-    answerLearningRate = None
-    return answerEpsilon, answerLearningRate
+    return 'NOT POSSIBLE'
 
 if __name__ == '__main__':
     print 'Answers to analysis questions:'
