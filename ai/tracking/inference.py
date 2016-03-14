@@ -250,7 +250,11 @@ class ParticleFilter(InferenceModule):
         Storing your particles as a Counter (where there could be an associated
         weight with each position) is incorrect and may produce errors.
         """
-        "*** YOUR CODE HERE ***"
+        self.particles = []
+        share = int(self.numParticles / len(self.legalPositions))
+        for position in self.legalPositions:
+            for i in range(share):
+                self.particles.append(position)
 
     def observe(self, observation, gameState):
         """
@@ -282,8 +286,21 @@ class ParticleFilter(InferenceModule):
         noisyDistance = observation
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        allPossible = util.Counter()
+        for p in self.legalPositions:
+            trueDistance = util.manhattanDistance(p, pacmanPosition)
+            allPossible[p] += emissionModel[trueDistance] * self.getBeliefDistribution()[p]
+        if noisyDistance == None:
+            self.particles = [self.getJailPosition()]
+            return
+        if not any(allPossible.values()):
+            self.initializeUniformly(gameState)
+            return
+        allPossible.normalize()
+        self.particles = []
+        for i in range(self.numParticles):
+            self.particles.append(util.sample(allPossible))
 
     def elapseTime(self, gameState):
         """
@@ -309,8 +326,11 @@ class ParticleFilter(InferenceModule):
         essentially converts a list of particles into a belief distribution (a
         Counter object)
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        distribution = util.Counter()
+        for p in self.particles:
+            distribution[p] += 1
+        distribution.normalize()
+        return distribution
 
 class MarginalInference(InferenceModule):
     """
